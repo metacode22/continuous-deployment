@@ -19,7 +19,7 @@ jobs:
     # 이제부터 하나의 step이 deploy to s3 bucket이라는 이름으로 실행될 거다.
     - name: deploy to s3 bucket
       # 실질적으로는 누가 만들어놓은 이걸 사용하겠다.
-      uses: jakejarvis/s3-sync-action@main
+      uses: jakejarvis/s3-sync-action@master
       # 이런 인자를 넣을 것이다.
       # S3의 버켓을 비워야 하니 delete라는 옵션을 준다.
       with:
