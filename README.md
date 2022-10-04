@@ -1,70 +1,49 @@
-# Getting Started with Create React App
+## AWS S3와 Github Actions를 이용해 자동으로 배포되는 환경 구축해보기
+---
+<div>AWS S3를 이용해 정적 웹 사이트 호스팅</div>
+<div>Github Actions를 이용해 CD 구축</div>
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+</br>
 
-## Available Scripts
+### 작성한 yml 파일
+```yml
+name: deploy
 
-In the project directory, you can run:
+on:
+  push:
+    branches:
+    - main
 
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+jobs:
+  deploy:
+    # 우분투 가장 최신 버전에서 돌아간다.
+    runs-on: ubuntu-latest
+    steps:
+    # 이 밑에 - <이름> 들은 모두 하나하나의 step이다.
+    # main으로 checkout
+    - uses: actions/checkout@master
+    # npm clean install
+    - run: npm install
+    - run: npm run build
+    # 이제부터 하나의 step이 deploy to s3 bucket이라는 이름으로 실행될 거다.
+    - name: deploy to s3 bucket
+      # 실질적으로는 누가 만들어놓은 이걸 사용하겠다.
+      uses: jakejarvis/s3-sync-action@master
+      # 이런 인자를 넣을 것이다.
+      # S3의 버켓을 비워야 하니 delete라는 옵션을 준다.
+      with:
+        args: --delete
+      env:
+        # 밑의 3개는 환경 변수로 노출되지 않아야 하는 것들이다.
+        # 이는 Github Repository의 Settings - Secrets - Actions에서 설정한다.
+        # S3 버킷 이름
+        AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+        # aws에도 내가 접근한다는 것을 알려야 한다. 아이디와 비밀번호라고 보면 된다.
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        # 밑의 2개는 노출되어도 상관없다.
+        # region은 서울
+        AWS_REGION: 'ap-northeast-2'
+        # 소스 폴더는 build이다.
+        SOURCE_DIR: 'build'
+```
