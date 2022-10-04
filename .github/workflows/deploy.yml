@@ -14,7 +14,7 @@ jobs:
     # main으로 checkout
     - uses: actions/checkout@master
     # npm clean install
-    - run: npm ci
+    - run: npm install
     - run: npm run build
     # 이제부터 하나의 step이 deploy to s3 bucket이라는 이름으로 실행될 거다.
     - name: deploy to s3 bucket
