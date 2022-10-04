@@ -12,7 +12,7 @@ jobs:
     steps:
     # 이 밑에 - <이름> 들은 모두 하나하나의 step이다.
     # main으로 checkout
-    - uses: actions/checkout@main
+    - uses: actions/checkout@master
     # npm clean install
     - run: npm ci
     - run: npm run build
